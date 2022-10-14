@@ -56,7 +56,7 @@ int read_file(char* file_name, char** str_ptr, int* size_of_file)
     return NO_ERRORS;
 }
 
-int liner_text(char* file, int size_of_file, int* num_of_lines, line_poz** lines)
+int liner_text(char* file, int size_of_file, int* num_of_lines, line_poz** lines, int space_divide_flag)
 {
     assert(file != NULL);
     assert(num_of_lines != NULL);
@@ -74,7 +74,7 @@ int liner_text(char* file, int size_of_file, int* num_of_lines, line_poz** lines
 
     for(int i = 0; i < size_of_file; i++)
     {
-        if((file[i] == '\n' || file[i] == '\r') && !space_flag)
+        if((file[i] == '\n' || file[i] == '\r' || (space_divide_flag && file[i] == ' ')) && !space_flag)
         {
             (*lines)[*num_of_lines].length = &file[i] - (*lines)[*num_of_lines].start + 1;
             file[i] = '\0';
@@ -96,17 +96,40 @@ int liner_text(char* file, int size_of_file, int* num_of_lines, line_poz** lines
 
 int asm_to_file(FILE* file_ptr, line_poz* lines_command_arr, int num_of_lines)
 {
-    for(int i = 0; i < num_of_lines, i++)
+    label labels_arr[num_of_lines];
+    int num_of_labels = 0;
+
+    for(int i = 0; i < num_of_lines; i++)
     {
-        
+        line_poz* command_content = (line_poz*)calloc(3, sizeof(line_poz));
+        int num_of_args;
+        liner_text(lines_command_arr[i].start, strlen(lines_command_arr[i].start),
+        &num_of_args, &command_content, 1);
+        int label_flag = 1;
+        for (int j = 0; j < sizeof(commands_attributes) / sizeof(command_asm_code); j++)
+        {
+            if(strcmp(commands_attributes[j].command_str, command_content[0].start) == 0)
+            {
+                printf("%d\n", commands_attributes[j].command_code);
+                label_flag = 0;
+            }
+        }
+        if(label_flag)
+        {
+            
+        }
+        free(command_content);
     }
+
+    
+        
 }
 
 int main(int argc, char** argv)
 {
-    if(argc < 2)
+    if(argc < 3)
     {
-        return NO_CODE_FILE;
+        return NOT_ENOUGH_ARGV;
     }
 
     int size_of_file = 0;
@@ -117,15 +140,18 @@ int main(int argc, char** argv)
 
     int num_of_commands = 0;
     line_poz* lines_command_arr = (line_poz*)calloc(size_of_file, sizeof(line_poz));
-    liner_text(file_str, size_of_file, &num_of_commands, &lines_command_arr);
+    liner_text(file_str, size_of_file, &num_of_commands, &lines_command_arr, 0);
+
+
 
     for(int i = 0; i < num_of_commands; i++)
     {
-        printf("%s\n", lines_command_arr[i].start);
+       // printf("%s\n", lines_command_arr[i].start);
     }
 
-    FILE* proc_command_file = fopen(out_file_name, "w");
+    FILE* proc_command_file = fopen(argv[2], "w");
 
+    asm_to_file(proc_command_file, lines_command_arr, num_of_commands);
 
 
     free(lines_command_arr);

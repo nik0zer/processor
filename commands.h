@@ -5,6 +5,7 @@ struct command_asm_code
 {
     char* command_str;
     int command_code;
+    int max_num_of_args;
 };
 
 enum COMMANDS
@@ -19,15 +20,15 @@ enum COMMANDS
     CMD_JMP = 10
 };
 
-command_asm_code commands_code[] = 
+command_asm_code commands_attributes[] = 
 {
-    {"PUSH", CMD_PUSH},
-    {"ADD", CMD_ADD},
-    {"SUB", CMD_SUB},
-    {"MUL", CMD_MUL},
-    {"DIV", CMD_DIV},
-    {"OUT", CMD_HLT},
-    {"JMP", CMD_JMP}
+    {"PUSH", CMD_PUSH, 1},
+    {"ADD", CMD_ADD, 0},
+    {"SUB", CMD_SUB, 0},
+    {"MUL", CMD_MUL, 0},
+    {"DIV", CMD_DIV, 0},
+    {"OUT", CMD_HLT, 0},
+    {"JMP", CMD_JMP, 1}
 };
 
 #endif

@@ -5,13 +5,19 @@ enum ERRORS
 {
     NO_ERRORS = 0,
     NULL_POINTER = 1,
-    NO_CODE_FILE = 2
+    NOT_ENOUGH_ARGV = 2
 };
 
 struct line_poz
 {
     char* start;
     int length;
+};
+
+struct label
+{
+    char* label_name;
+    int address;
 };
 
 
