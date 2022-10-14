@@ -1,7 +1,0 @@
-processor.o
-assembler.o
-disassembler.o
-processor
-assembler
-disassembler
-test_command_file
