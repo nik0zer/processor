@@ -181,6 +181,16 @@ int asm_to_file(FILE* file_ptr, line_poz* lines_command_arr, int num_of_lines)
                 *(command_content[0].start + command_content[0].length - 1) = '\0';
                 labels_arr[num_of_labels].address = i;
                 labels_arr[num_of_labels].label_name = command_content[0].start;
+
+                for(int j = 0; j < num_of_labels; j++)
+                {
+                    if(strcmp(labels_arr[j].label_name, labels_arr[num_of_labels].label_name) == 0)
+                    {
+                        free(command_content);
+                        return WRONG_LABEL_NAME;
+                    }
+                }
+
                 curr_command_code = CMD_LBL;
                 num_of_labels++;
             }
@@ -203,7 +213,16 @@ int asm_to_file(FILE* file_ptr, line_poz* lines_command_arr, int num_of_lines)
             int ram_arg_flag = 0;
             read_command_arg(command_content[j], labels_arr, num_of_labels, curr_command_code,
             &num_arg, &reg_arg, &num_arg_flag, &reg_arg_flag, &ram_arg_flag);
-            printf("%d %d ", num_arg, reg_arg);
+
+            if(reg_arg_flag)
+            {
+                printf("%d ", reg_arg);
+            }
+
+            if(num_arg_flag)
+            {
+                printf("%d ", num_arg);
+            }
         }
 
         
@@ -212,11 +231,6 @@ int asm_to_file(FILE* file_ptr, line_poz* lines_command_arr, int num_of_lines)
 
 
         free(command_content);
-    }
-
-    for(int i = 0; i < num_of_labels; i++)
-    {
-        printf("%d %s\n", labels_arr[i].address, labels_arr[i].label_name);
     }
     return NO_ERRORS;   
 }
