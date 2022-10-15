@@ -5,7 +5,9 @@ enum ERRORS
 {
     NO_ERRORS = 0,
     NULL_POINTER = 1,
-    NOT_ENOUGH_ARGV = 2
+    NOT_ENOUGH_ARGV = 2,
+    WRONG_NUM_OF_ARGS = 3,
+    WRONG_LABEL_NAME = 4
 };
 
 struct line_poz

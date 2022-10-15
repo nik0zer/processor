@@ -17,10 +17,11 @@ enum COMMANDS
     CMD_DIV = 5,
     CMD_OUT = 6,
     CMD_HLT = 7,
+    CMD_LBL = 8,
     CMD_JMP = 10
 };
 
-command_asm_code commands_attributes[] = 
+const command_asm_code COMMANDS_ATTRIBUTES[] = 
 {
     {"PUSH", CMD_PUSH, 1},
     {"ADD", CMD_ADD, 0},
@@ -28,6 +29,7 @@ command_asm_code commands_attributes[] =
     {"MUL", CMD_MUL, 0},
     {"DIV", CMD_DIV, 0},
     {"OUT", CMD_HLT, 0},
+    {"", CMD_LBL, 0},
     {"JMP", CMD_JMP, 1}
 };
 

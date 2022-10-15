@@ -1,4 +1,5 @@
 CFLAGS=-g -fsanitize=address,leak -c
+CC = g++
 
 all: processor assembler disassembler
 

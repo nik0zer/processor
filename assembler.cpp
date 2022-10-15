@@ -14,6 +14,27 @@
 
 const char* out_file_name = "processor.out";
 
+int get_num_of_args(int command_code)
+{
+    for(int i = 0; i < sizeof(COMMANDS_ATTRIBUTES) / sizeof(command_asm_code); i++)
+    {
+        if(COMMANDS_ATTRIBUTES[i].command_code == command_code)
+        {
+            return COMMANDS_ATTRIBUTES[i].max_num_of_args;
+        }
+    }
+}
+
+char* get_command_str(int command_code)
+{
+    for(int i = 0; i < sizeof(COMMANDS_ATTRIBUTES) / sizeof(command_asm_code); i++)
+    {
+        if(COMMANDS_ATTRIBUTES[i].command_code == command_code)
+        {
+            return COMMANDS_ATTRIBUTES[i].command_str;
+        }
+    }
+}
 
 int get_file_size(char* file_name, int* size_of_file)
 {
@@ -76,8 +97,8 @@ int liner_text(char* file, int size_of_file, int* num_of_lines, line_poz** lines
     {
         if((file[i] == '\n' || file[i] == '\r' || (space_divide_flag && file[i] == ' ')) && !space_flag)
         {
-            (*lines)[*num_of_lines].length = &file[i] - (*lines)[*num_of_lines].start + 1;
             file[i] = '\0';
+            (*lines)[*num_of_lines].length = strlen((*lines)[*num_of_lines].start);
             (*num_of_lines)++;
             space_flag = true;
         }
@@ -86,12 +107,48 @@ int liner_text(char* file, int size_of_file, int* num_of_lines, line_poz** lines
         {
             space_flag = false;
             (*lines)[*num_of_lines].start = file + i;
+            (*lines)[*num_of_lines].length = strlen((*lines)[*num_of_lines].start);
         }
     }
     (*num_of_lines)++;
 
     *lines = (line_poz*)realloc((*lines), (*num_of_lines) * sizeof(line_poz));
     return NO_ERRORS;
+}
+
+int read_command_arg(line_poz arg_str, label labels_arr[], int num_of_labels, int command_code, int* num_arg, int* reg_arg,
+int* num_arg_flag, int* reg_arg_flag, int* ram_arg_flag)
+{
+    if(num_arg == NULL || reg_arg == NULL || num_arg_flag == NULL ||
+    reg_arg_flag == NULL || ram_arg_flag == NULL)
+    {
+        return NULL_POINTER;
+    }
+
+    *num_arg = 0;
+    *reg_arg = 0;
+    *num_arg_flag = 0;
+    *reg_arg_flag = 0;
+    *ram_arg_flag = 0;
+    if(sscanf(arg_str.start, "%d", num_arg))
+    {
+        *num_arg_flag = 1;
+        return NO_ERRORS;
+    }
+    if(command_code == CMD_JMP)
+    {
+        for(int i = 0; i < num_of_labels; i++)
+        {
+            if(strcmp(labels_arr[i].label_name, arg_str.start) == 0)
+            {
+                *num_arg_flag = 1;
+                *num_arg = labels_arr[i].address;
+                return NO_ERRORS;
+            }
+        }
+        return WRONG_LABEL_NAME;
+    }
+
 }
 
 int asm_to_file(FILE* file_ptr, line_poz* lines_command_arr, int num_of_lines)
@@ -102,27 +159,66 @@ int asm_to_file(FILE* file_ptr, line_poz* lines_command_arr, int num_of_lines)
     for(int i = 0; i < num_of_lines; i++)
     {
         line_poz* command_content = (line_poz*)calloc(3, sizeof(line_poz));
-        int num_of_args;
+        int num_of_args = 0;
         liner_text(lines_command_arr[i].start, strlen(lines_command_arr[i].start),
         &num_of_args, &command_content, 1);
+
+        int curr_command_code = 0;
+
         int label_flag = 1;
-        for (int j = 0; j < sizeof(commands_attributes) / sizeof(command_asm_code); j++)
+        for (int j = 0; j < sizeof(COMMANDS_ATTRIBUTES) / sizeof(command_asm_code); j++)
         {
-            if(strcmp(commands_attributes[j].command_str, command_content[0].start) == 0)
+            if(strcmp(COMMANDS_ATTRIBUTES[j].command_str, command_content[0].start) == 0)
             {
-                printf("%d\n", commands_attributes[j].command_code);
+                curr_command_code = COMMANDS_ATTRIBUTES[j].command_code;
                 label_flag = 0;
             }
         }
         if(label_flag)
         {
-            
+            if(command_content[0].length >= 2 && (*(command_content[0].start + command_content[0].length - 1) == ':'))
+            {
+                *(command_content[0].start + command_content[0].length - 1) = '\0';
+                labels_arr[num_of_labels].address = i;
+                labels_arr[num_of_labels].label_name = command_content[0].start;
+                curr_command_code = CMD_LBL;
+                num_of_labels++;
+            }
         }
+
+        printf("%d ", curr_command_code);
+
+        if(num_of_args > get_num_of_args(curr_command_code) + 1)
+        {
+            free(command_content);
+            return WRONG_NUM_OF_ARGS;
+        }
+
+        for(int j = 1; j < num_of_args; j++)
+        {
+            int num_arg = 0;
+            int reg_arg = 0;
+            int num_arg_flag = 0;
+            int reg_arg_flag = 0;
+            int ram_arg_flag = 0;
+            read_command_arg(command_content[j], labels_arr, num_of_labels, curr_command_code,
+            &num_arg, &reg_arg, &num_arg_flag, &reg_arg_flag, &ram_arg_flag);
+            printf("%d %d ", num_arg, reg_arg);
+        }
+
+        
+
+        printf("\n");
+
+
         free(command_content);
     }
 
-    
-        
+    for(int i = 0; i < num_of_labels; i++)
+    {
+        printf("%d %s\n", labels_arr[i].address, labels_arr[i].label_name);
+    }
+    return NO_ERRORS;   
 }
 
 int main(int argc, char** argv)
