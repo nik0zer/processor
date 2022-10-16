@@ -7,7 +7,9 @@ enum ERRORS
     NULL_POINTER = 1,
     NOT_ENOUGH_ARGV = 2,
     WRONG_NUM_OF_ARGS = 3,
-    WRONG_LABEL_NAME = 4
+    WRONG_LABEL_NAME = 4,
+    WRONG_NUM_ARG = 5,
+    WRONG_REG_ARG = 6
 };
 
 struct line_poz

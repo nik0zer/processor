@@ -1,11 +1,17 @@
 #ifndef COMMANDS_H
 #define COMMANDS_H
 
-struct command_asm_code
+struct commands_informations
 {
     char* command_str;
     int command_code;
     int max_num_of_args;
+};
+
+struct registers_informations
+{
+    char* register_str;
+    int register_code;
 };
 
 enum COMMANDS
@@ -21,16 +27,40 @@ enum COMMANDS
     CMD_JMP = 10
 };
 
-const command_asm_code COMMANDS_ATTRIBUTES[] = 
+enum REGISTERS
 {
-    {"PUSH", CMD_PUSH, 1},
-    {"ADD", CMD_ADD, 0},
-    {"SUB", CMD_SUB, 0},
-    {"MUL", CMD_MUL, 0},
-    {"DIV", CMD_DIV, 0},
-    {"OUT", CMD_HLT, 0},
+    REG_RAX = 0,
+    REG_RBX = 1,
+    REG_RCX = 2,
+    REG_RDX = 3,
+    REG_RBP = 4,
+    REG_RSI = 5,
+    REG_RDI = 6,
+    REG_RSP = 7
+};
+
+const commands_informations COMMANDS_ATTRIBUTES[] = 
+{
+    {"push", CMD_PUSH, 1},
+    {"add", CMD_ADD, 2},
+    {"sub", CMD_SUB, 2},
+    {"mul", CMD_MUL, 2},
+    {"div", CMD_DIV, 2},
+    {"out", CMD_HLT, 2},
     {"", CMD_LBL, 0},
-    {"JMP", CMD_JMP, 1}
+    {"jmp", CMD_JMP, 1}
+};
+
+const registers_informations REGISTERS_ATTRIBUTES[] = 
+{
+    {"rax", REG_RAX},
+    {"rbx", REG_RBX},
+    {"rcx", REG_RCX},
+    {"rdx", REG_RDX},
+    {"rbp", REG_RBP},
+    {"rsi", REG_RSI},
+    {"rdi", REG_RDI},
+    {"rsp", REG_RSP}
 };
 
 #endif
