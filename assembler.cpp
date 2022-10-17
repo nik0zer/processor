@@ -12,27 +12,24 @@
 #include "assembler.h"
 #include "commands.h"
 
-#define HALF_BYTE 4
-#define BYTE 8
-
 const char* out_file_name = "processor.out";
 
-int get_num_of_args(int command_code)
+int get_num_of_args(int opcode)
 {
     for(int i = 0; i < sizeof(COMMANDS_ATTRIBUTES) / sizeof(commands_informations); i++)
     {
-        if(COMMANDS_ATTRIBUTES[i].command_code == command_code)
+        if(COMMANDS_ATTRIBUTES[i].opcode == opcode)
         {
             return COMMANDS_ATTRIBUTES[i].max_num_of_args;
         }
     }
 }
 
-char* get_command_str(int command_code)
+char* get_command_str(int opcode)
 {
     for(int i = 0; i < sizeof(COMMANDS_ATTRIBUTES) / sizeof(commands_informations); i++)
     {
-        if(COMMANDS_ATTRIBUTES[i].command_code == command_code)
+        if(COMMANDS_ATTRIBUTES[i].opcode == opcode)
         {
             return COMMANDS_ATTRIBUTES[i].command_str;
         }
@@ -48,12 +45,10 @@ int get_file_size(char* file_name, int* size_of_file)
         errno = NULL_POINTER;
         return NULL_POINTER;
     }
-    else
-    {
-        struct stat st = {};;
-        stat(file_name, &st);
-        *size_of_file = st.st_size;
-    }
+
+    struct stat st = {};
+    stat(file_name, &st);
+    *size_of_file = st.st_size;
     return NO_ERRORS;
 }
 
@@ -80,20 +75,22 @@ int read_file(char* file_name, char** str_ptr, int* size_of_file)
     return NO_ERRORS;
 }
 
-int liner_text(char* file, int size_of_file, int* num_of_lines, line_poz** lines, int space_divide_flag)
+int liner_text(char* file, int size_of_file, int* num_of_lines, line_poz** lines_ptr, int space_divide_flag)
 {
     assert(file != NULL);
     assert(num_of_lines != NULL);
     assert(lines != NULL);
 
-    if(num_of_lines == NULL || file == NULL || lines == NULL)
+    if(num_of_lines == NULL || file == NULL || lines_ptr == NULL)
     {
         errno = NULL_POINTER;
         return NULL_POINTER;
     }
 
     *num_of_lines = 0;
-    (*lines)[*num_of_lines].start = file;
+    auto lines = *lines_ptr;
+    
+    lines[*num_of_lines].start;
     bool space_flag = true;
 
     for(int i = 0; i < size_of_file; i++)
@@ -101,7 +98,7 @@ int liner_text(char* file, int size_of_file, int* num_of_lines, line_poz** lines
         if((file[i] == '\n' || file[i] == '\r' || (space_divide_flag && file[i] == ' ')) && !space_flag)
         {
             file[i] = '\0';
-            (*lines)[*num_of_lines].length = strlen((*lines)[*num_of_lines].start);
+            lines[*num_of_lines].length = strlen(lines[*num_of_lines].start);
             (*num_of_lines)++;
             space_flag = true;
         }
@@ -109,47 +106,45 @@ int liner_text(char* file, int size_of_file, int* num_of_lines, line_poz** lines
         if(!isspace(file[i]) && file[i] != '\0' && space_flag)
         {
             space_flag = false;
-            (*lines)[*num_of_lines].start = file + i;
-            (*lines)[*num_of_lines].length = strlen((*lines)[*num_of_lines].start);
+            lines[*num_of_lines].start = file + i;
+            lines[*num_of_lines].length = strlen(lines[*num_of_lines].start);
         }
     }
     (*num_of_lines)++;
 
-    *lines = (line_poz*)realloc((*lines), (*num_of_lines) * sizeof(line_poz));
+    (*lines_ptr) = (line_poz*)realloc(lines, (*num_of_lines) * sizeof(line_poz));
     return NO_ERRORS;
 }
 
-int read_command_arg(line_poz arg_str, label labels_arr[], int num_of_labels, int command_code, int* num_arg, int* reg_arg,
-int* num_arg_flag, int* reg_arg_flag, int* ram_arg_flag)
+int read_command_arg(line_poz arg_str, label labels_arr[], int num_of_labels, int opcode, arg_val* read_arg_val)
 {
-    if(num_arg == NULL || reg_arg == NULL || num_arg_flag == NULL ||
-    reg_arg_flag == NULL || ram_arg_flag == NULL)
+    if(read_arg_val == NULL)
     {
         return NULL_POINTER;
     }
 
-    *num_arg = 0;
-    *reg_arg = 0;
-    *num_arg_flag = 0;
-    *reg_arg_flag = 0;
-    *ram_arg_flag = 0;
-    if(sscanf(arg_str.start, "%d", num_arg))
+    read_arg_val->num_arg = 0;
+    read_arg_val->reg_arg = 0;
+    read_arg_val->num_arg_flag = 0;
+    read_arg_val->reg_arg_flag = 0;
+    read_arg_val->ram_arg_flag = 0;
+    if(sscanf(arg_str.start, "%d", &(read_arg_val->num_arg)))
     {
-        *num_arg_flag = 1;
+        read_arg_val->num_arg_flag = 1;
         return NO_ERRORS;
     }
 
     if(arg_str.start[0] == '[' && arg_str.start[arg_str.length - 1] == ']')
     {
-        *ram_arg_flag = 1;
+        read_arg_val->ram_arg_flag = 1;
         arg_str.start[arg_str.length - 1] = '\0';
         arg_str.start++;
         arg_str.length = strlen(arg_str.start);
     }
 
-    if(sscanf(arg_str.start, "%d", num_arg))
+    if(sscanf(arg_str.start, "%d", &(read_arg_val->num_arg)))
     {
-        *num_arg_flag = 1;
+        read_arg_val->num_arg_flag = 1;
         return NO_ERRORS;
     }
 
@@ -160,9 +155,9 @@ int* num_arg_flag, int* reg_arg_flag, int* ram_arg_flag)
         *divide_symbol_ptr = '\0';
         divide_symbol_ptr++;
         arg_str.length = strlen(arg_str.start);
-        if(sscanf(divide_symbol_ptr, "%d", num_arg))
+        if(sscanf(divide_symbol_ptr, "%d", &(read_arg_val->num_arg)))
         {
-            *num_arg_flag = 1;
+            read_arg_val->num_arg_flag = 1;
         }
         else
         {
@@ -175,20 +170,20 @@ int* num_arg_flag, int* reg_arg_flag, int* ram_arg_flag)
         
         if(strcmp(arg_str.start, REGISTERS_ATTRIBUTES[i].register_str) == 0)
         {
-            *reg_arg_flag = 1;
-            *reg_arg = REGISTERS_ATTRIBUTES[i].register_code;
+            read_arg_val->reg_arg_flag = 1;
+            read_arg_val->reg_arg = REGISTERS_ATTRIBUTES[i].register_code;
             return NO_ERRORS;
         }
     }
 
-    if(command_code == CMD_JMP)
+    if(opcode == CMD_JMP)
     {
         for(int i = 0; i < num_of_labels; i++)
         {
             if(strcmp(labels_arr[i].label_name, arg_str.start) == 0)
             {
-                *num_arg_flag = 1;
-                *num_arg = labels_arr[i].address;
+                read_arg_val->num_arg_flag = 1;
+                read_arg_val->num_arg = labels_arr[i].address;
                 return NO_ERRORS;
             }
         }
@@ -200,13 +195,16 @@ int* num_arg_flag, int* reg_arg_flag, int* ram_arg_flag)
 
 int asm_to_file(FILE* file_ptr, line_poz* lines_command_arr, int num_of_lines)
 {
+    
     label labels_arr[num_of_lines];
     int num_of_labels = 0;
 
     for(int i = 0; i < num_of_lines; i++)
     {
-        printf("%s\n", lines_command_arr[i].start);
         line_poz* command_content = (line_poz*)calloc(3, sizeof(line_poz));
+
+        printf("%s\n", lines_command_arr[i].start);
+        
         int num_of_args = 0;
         liner_text(lines_command_arr[i].start, strlen(lines_command_arr[i].start),
         &num_of_args, &command_content, 1);
@@ -218,7 +216,7 @@ int asm_to_file(FILE* file_ptr, line_poz* lines_command_arr, int num_of_lines)
         {
             if(strcmp(COMMANDS_ATTRIBUTES[j].command_str, command_content[0].start) == 0)
             {
-                curr_command_code = COMMANDS_ATTRIBUTES[j].command_code;
+                curr_command_code = COMMANDS_ATTRIBUTES[j].opcode;
                 label_flag = 0;
             }
         }
@@ -226,7 +224,7 @@ int asm_to_file(FILE* file_ptr, line_poz* lines_command_arr, int num_of_lines)
         {
             if(command_content[0].length >= 2 && (*(command_content[0].start + command_content[0].length - 1) == ':'))
             {
-                *(command_content[0].start + command_content[0].length - 1) = '\0';
+                command_content[0].start[command_content[0].length - 1] = '\0';
                 labels_arr[num_of_labels].address = i;
                 labels_arr[num_of_labels].label_name = command_content[0].start;
 
@@ -234,7 +232,6 @@ int asm_to_file(FILE* file_ptr, line_poz* lines_command_arr, int num_of_lines)
                 {
                     if(strcmp(labels_arr[j].label_name, labels_arr[num_of_labels].label_name) == 0)
                     {
-                        free(command_content);
                         return WRONG_LABEL_NAME;
                     }
                 }
@@ -246,7 +243,9 @@ int asm_to_file(FILE* file_ptr, line_poz* lines_command_arr, int num_of_lines)
 
         printf("%d ", curr_command_code);
 
-        if(num_of_args > get_num_of_args(curr_command_code) + 1)
+        num_of_args--;
+        line_poz* args = command_content + 1;
+        if(num_of_args > get_num_of_args(curr_command_code))
         {
             free(command_content);
             return WRONG_NUM_OF_ARGS;
@@ -254,72 +253,54 @@ int asm_to_file(FILE* file_ptr, line_poz* lines_command_arr, int num_of_lines)
 
         int num_of_read_args = 0;
         char arg_mask = 0;
+        
 
-        for(int j = 1; j < num_of_args; j++)
+        int read_args[MAX_OF_READ_ARGS] = {};
+
+        for(int j = 0; j < num_of_args; j++)
         {
-            int num_arg = 0;
-            int reg_arg = 0;
-            int num_arg_flag = 0;
-            int reg_arg_flag = 0;
-            int ram_arg_flag = 0;
-            read_command_arg(command_content[j], labels_arr, num_of_labels, curr_command_code,
-            &num_arg, &reg_arg, &num_arg_flag, &reg_arg_flag, &ram_arg_flag);
+            arg_val read_arg_val;
+            read_command_arg(args[j], labels_arr, num_of_labels, curr_command_code,
+            &read_arg_val);
 
-            if(reg_arg_flag)
-            {
-                num_of_read_args++;
-                arg_mask |= 0x01 << (HALF_BYTE * (j - 1));
-                printf("%d ", reg_arg);
-            }
 
-            if(num_arg_flag)
-            {
-                num_of_read_args++;
-                arg_mask |= 0x02 << (HALF_BYTE * (j - 1));
-                printf("%d ", num_arg);
-            }
+            
+            arg_mask |= !read_arg_val.reg_arg_flag ? 0 : (0x01 << (HALF_BYTE * j));
+            read_args[num_of_read_args] = !read_arg_val.reg_arg ? 0 : read_arg_val.reg_arg;
+            num_of_read_args += read_arg_val.reg_arg_flag;
 
-            if(ram_arg_flag)
-            {
-                arg_mask |= 0x02 << (HALF_BYTE * (j - 1));
-                printf("ram ");
-            }
+            
+            arg_mask |= !read_arg_val.num_arg_flag ? 0 : (0x02 << (HALF_BYTE * j));
+            read_args[num_of_read_args] = !read_arg_val.num_arg_flag ? 0 : read_arg_val.num_arg;
+            arg_mask |= !read_arg_val.ram_arg_flag ? 0 : (0x04 << (HALF_BYTE * j));
+            num_of_read_args += read_arg_val.num_arg_flag;
         }
 
         curr_command_code = (curr_command_code << BYTE * 2) | (num_of_read_args << BYTE) | arg_mask;
 
+        if(fwrite(&curr_command_code, sizeof(int), 1, file_ptr) != 1)
+        {
+            free(command_content);
+            return WRITE_TO_FILE_ERROR;
+        }
+
+        if(fwrite(read_args, sizeof(int), MAX_OF_READ_ARGS, file_ptr) != MAX_OF_READ_ARGS)
+        {
+            free(command_content);
+            return WRITE_TO_FILE_ERROR;
+        }
+
         printf("%X ", curr_command_code);
 
-        /*for(int j = 1; j < num_of_args; j++)
+        for(int j = 0; j < MAX_OF_READ_ARGS; j++)
         {
-            if((0x01 << HALF_BYTE * (j - 1)) & curr_command_code)
-            {
-                arg_mask |= 0x01 << (HALF_BYTE * (j - 1));
-                printf("%d ", reg_arg);
-            }
-
-            if(num_arg_flag)
-            {
-                arg_mask |= 0x02 << (HALF_BYTE * (j - 1));
-                printf("%d ", num_arg);
-            }
-
-            if(ram_arg_flag)
-            {
-                arg_mask |= 0x02 << (HALF_BYTE * (j - 1));
-                printf("ram ");
-            }
-        }*/
-
-        
-
-        
+            printf("%X", read_args[j]);
+        }
 
         printf("\n");
-
-
         free(command_content);
     }
+    
     return NO_ERRORS;   
 }
 
@@ -340,18 +321,11 @@ int main(int argc, char** argv)
     line_poz* lines_command_arr = (line_poz*)calloc(size_of_file, sizeof(line_poz));
     liner_text(file_str, size_of_file, &num_of_commands, &lines_command_arr, 0);
 
-
-
-    for(int i = 0; i < num_of_commands; i++)
-    {
-       // printf("%s\n", lines_command_arr[i].start);
-    }
-
-    FILE* proc_command_file = fopen(argv[2], "w");
+    FILE* proc_command_file = fopen(argv[2], "wb");
 
     asm_to_file(proc_command_file, lines_command_arr, num_of_commands);
 
-
+    fclose(proc_command_file);
     free(lines_command_arr);
     free(file_str);
 

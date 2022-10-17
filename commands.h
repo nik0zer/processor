@@ -4,7 +4,7 @@
 struct commands_informations
 {
     char* command_str;
-    int command_code;
+    int opcode;
     int max_num_of_args;
 };
 
