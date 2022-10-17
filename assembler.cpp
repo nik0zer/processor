@@ -323,6 +323,8 @@ int main(int argc, char** argv)
 
     FILE* proc_command_file = fopen(argv[2], "wb");
 
+    fwrite(&num_of_commands, sizeof(int), 1, proc_command_file);
+
     asm_to_file(proc_command_file, lines_command_arr, num_of_commands);
 
     fclose(proc_command_file);
