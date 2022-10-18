@@ -12,7 +12,7 @@
 #include "assembler.h"
 #include "commands.h"
 
-const char* out_file_name = "processor.out";
+const char* MAIN_LABEL_NAME = "main";
 
 int get_num_of_args(int op_code)
 {
@@ -132,7 +132,7 @@ int liner_text(char* file, int size_of_file, int* num_of_lines, line_poz** lines
     return NO_ERRORS;
 }
 
-int read_command_arg(line_poz arg_str, label labels_arr[], int num_of_labels, int op_code, arg_val* read_arg_val)
+int read_command_arg(line_poz arg_str, label labels_arr[], int num_of_labels, int op_code, arg_val* read_arg_val, int* jmp_label_flag)
 {
     if(read_arg_val == NULL)
     {
@@ -200,6 +200,7 @@ int read_command_arg(line_poz arg_str, label labels_arr[], int num_of_labels, in
         {
             if(strcmp(labels_arr[i].label_name, arg_str.start) == 0)
             {
+                *jmp_label_flag = 1;
                 read_arg_val->num_arg_flag = 1;
                 read_arg_val->num_arg = labels_arr[i].address;
                 return NO_ERRORS;
@@ -213,6 +214,7 @@ int read_command_arg(line_poz arg_str, label labels_arr[], int num_of_labels, in
 
 int asm_to_file(FILE* file_ptr, line_poz* lines_command_arr, int num_of_lines)
 {
+    int main_address = -1;
     
     label labels_arr[num_of_lines];
     int num_of_labels = 0;
@@ -245,6 +247,11 @@ int asm_to_file(FILE* file_ptr, line_poz* lines_command_arr, int num_of_lines)
                 command_content[0].start[command_content[0].length - 1] = '\0';
                 labels_arr[num_of_labels].address = i;
                 labels_arr[num_of_labels].label_name = command_content[0].start;
+
+                if(strcmp(MAIN_LABEL_NAME, labels_arr[num_of_labels].label_name) == 0)
+                {
+                    main_address = labels_arr[num_of_labels].address;
+                }
 
                 for(int j = 0; j < num_of_labels; j++)
                 {
@@ -281,21 +288,21 @@ int asm_to_file(FILE* file_ptr, line_poz* lines_command_arr, int num_of_lines)
             {
                 break;
             }
+            int jmp_label_flag = 0;
             arg_val read_arg_val;
             read_command_arg(args[j], labels_arr, num_of_labels, op_code,
-            &read_arg_val);
+            &read_arg_val, &jmp_label_flag);
 
-
-            
             arg_mask |= !read_arg_val.reg_arg_flag ? 0 : (0x01 << (HALF_BYTE * j));
             read_args[num_of_read_args] = !read_arg_val.reg_arg ? 0 : read_arg_val.reg_arg;
             num_of_read_args += read_arg_val.reg_arg_flag;
-
             
             arg_mask |= !read_arg_val.num_arg_flag ? 0 : (0x02 << (HALF_BYTE * j));
             read_args[num_of_read_args] = !read_arg_val.num_arg_flag ? 0 : read_arg_val.num_arg;
             arg_mask |= !read_arg_val.ram_arg_flag ? 0 : (0x04 << (HALF_BYTE * j));
             num_of_read_args += read_arg_val.num_arg_flag;
+
+            arg_mask |= !jmp_label_flag ? 0 : (0x01 << HALF_BYTE);
         }
 
         if(num_of_read_args < get_min_num_of_args(op_code))
@@ -303,6 +310,8 @@ int asm_to_file(FILE* file_ptr, line_poz* lines_command_arr, int num_of_lines)
             free(command_content);
             return WRONG_NUM_OF_ARGS;
         }
+
+        
 
         op_code = (op_code << BYTE * 2) | (num_of_read_args << BYTE) | arg_mask;
 
@@ -328,7 +337,11 @@ int asm_to_file(FILE* file_ptr, line_poz* lines_command_arr, int num_of_lines)
         printf("\n");
         free(command_content);
     }
-    
+    if(main_address < 0)
+    {
+        return NO_MAIN_LABEL;
+    }
+    fwrite(&main_address, sizeof(int), 1, file_ptr);
     return NO_ERRORS;   
 }
 

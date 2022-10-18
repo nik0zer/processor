@@ -53,16 +53,22 @@ int main(int argc, char** argv)
     stack int_proc_stack;
     stack_init(&int_proc_stack, sizeof(int));
 
+    stack refund_stack;
+    stack_init(&refund_stack, sizeof(int));
+
     int num_of_commands = 0; 
     if(argc < 2)
     {
         return NOT_ENOUGH_ARGV;
     }
     FILE* commands_file = fopen(argv[1], "rb");
+    int command_counter = 0;
     fread(&num_of_commands, sizeof(int), 1, commands_file);
 
     int* command_arr = (int*)calloc(num_of_commands * SIZE_OF_COMMAND, sizeof(int));
     fread(command_arr, sizeof(int), num_of_commands * SIZE_OF_COMMAND, commands_file);
+    
+    fread(&command_counter, sizeof(int), 1, commands_file);
 
     for(int i = 0; i < num_of_commands; i++)
     {
@@ -73,8 +79,6 @@ int main(int argc, char** argv)
         }
         printf("\n");
     }
-
-    int command_counter = 0;
 
     reg_t reg_arr[NUM_OF_REGISTERS] = {};
     ram_t ram_arr[SIZE_OF_RAM] = {};
@@ -114,6 +118,7 @@ int main(int argc, char** argv)
         {
             if(num_of_args < 1 || (!curr_args_flags.ram_flag_1 && curr_args_flags.num_flag_1))
             {
+                stack_destroy(&refund_stack);
                 stack_destroy(&int_proc_stack);
                 free(command_arr);
                 return WRONG_ARGS;
@@ -123,6 +128,7 @@ int main(int argc, char** argv)
 
             if(stack_pop(&int_proc_stack, &pop) == NULL_SIZE_OF_STACK)
             {
+                stack_destroy(&refund_stack);
                 stack_destroy(&int_proc_stack);
                 free(command_arr);
                 return NULL_SIZE_OF_STACK;
@@ -145,6 +151,7 @@ int main(int argc, char** argv)
         {
             if(num_of_args < 1)
             {
+                stack_destroy(&refund_stack);
                 stack_destroy(&int_proc_stack);
                 free(command_arr);
                 return WRONG_ARGS;
@@ -165,6 +172,7 @@ int main(int argc, char** argv)
         {
             if(num_of_args < 1 || (!curr_args_flags.ram_flag_1 && curr_args_flags.num_flag_1))
             {
+                stack_destroy(&refund_stack);
                 stack_destroy(&int_proc_stack);
                 free(command_arr);
                 return WRONG_ARGS;
@@ -198,6 +206,7 @@ int main(int argc, char** argv)
             }
             if(num_of_args == 1 || (curr_args_flags.num_flag_1 && !curr_args_flags.ram_flag_1))
             {
+                stack_destroy(&refund_stack);
                 stack_destroy(&int_proc_stack);
                 free(command_arr);
                 return WRONG_ARGS;
@@ -231,6 +240,7 @@ int main(int argc, char** argv)
                 stack_pop(&int_proc_stack, &pop_1);
                 if(stack_pop(&int_proc_stack, &pop_2) == NULL_SIZE_OF_STACK)
                 {
+                    stack_destroy(&refund_stack);
                     stack_destroy(&int_proc_stack);
                     free(command_arr);
                     return NULL_SIZE_OF_STACK;
@@ -242,6 +252,7 @@ int main(int argc, char** argv)
             }
             if(num_of_args == 1 || (curr_args_flags.num_flag_1 && !curr_args_flags.ram_flag_1))
             {
+                stack_destroy(&refund_stack);
                 stack_destroy(&int_proc_stack);
                 free(command_arr);
                 return WRONG_ARGS;
@@ -276,6 +287,7 @@ int main(int argc, char** argv)
                 stack_pop(&int_proc_stack, &pop_1);
                 if(stack_pop(&int_proc_stack, &pop_2) == NULL_SIZE_OF_STACK)
                 {
+                    stack_destroy(&refund_stack);
                     stack_destroy(&int_proc_stack);
                     free(command_arr);
                     return NULL_SIZE_OF_STACK;
@@ -287,6 +299,7 @@ int main(int argc, char** argv)
             }
             if(num_of_args == 1 || (curr_args_flags.num_flag_1 && !curr_args_flags.ram_flag_1))
             {
+                stack_destroy(&refund_stack);
                 stack_destroy(&int_proc_stack);
                 free(command_arr);
                 return WRONG_ARGS;
@@ -320,6 +333,7 @@ int main(int argc, char** argv)
                 stack_pop(&int_proc_stack, &pop_1);
                 if(stack_pop(&int_proc_stack, &pop_2) == NULL_SIZE_OF_STACK)
                 {
+                    stack_destroy(&refund_stack);
                     stack_destroy(&int_proc_stack);
                     free(command_arr);
                     return NULL_SIZE_OF_STACK;
@@ -331,6 +345,7 @@ int main(int argc, char** argv)
             }
             if(num_of_args == 1 || (curr_args_flags.num_flag_1 && !curr_args_flags.ram_flag_1))
             {
+                stack_destroy(&refund_stack);
                 stack_destroy(&int_proc_stack);
                 free(command_arr);
                 return WRONG_ARGS;
@@ -359,6 +374,7 @@ int main(int argc, char** argv)
         {
             if(num_of_args < 1)
             {
+                stack_destroy(&refund_stack);
                 stack_destroy(&int_proc_stack);
                 free(command_arr);
                 return WRONG_ARGS;
@@ -369,13 +385,32 @@ int main(int argc, char** argv)
 
             if(arg_1 < 0 || arg_1 >= num_of_commands)
             {
+                stack_destroy(&refund_stack);
                 stack_destroy(&int_proc_stack);
                 free(command_arr);
                 return WRONG_JMP_ADDRESS;
             }
 
-            command_counter = arg_1 - 1;
+            if(curr_args_flags.reg_flag_2 == 1) //same as jmp_label_flag
+            {
+                stack_push(&refund_stack, &command_counter);
+            }
 
+            command_counter = arg_1 - 1;
+            break;
+        }
+
+        case CMD_RET:
+        {
+            int refund_address = 0;
+            if(stack_pop(&refund_stack, &refund_address) == NULL_SIZE_OF_STACK)
+            {
+                stack_destroy(&refund_stack);
+                stack_destroy(&int_proc_stack);
+                free(command_arr);
+                return NULL_SIZE_OF_STACK;
+            }
+            command_counter = refund_address - 1;
             break;
         }
 
@@ -387,6 +422,7 @@ int main(int argc, char** argv)
             {
                 if(num_of_args < 1)
                 {
+                    stack_destroy(&refund_stack);
                     stack_destroy(&int_proc_stack);
                     free(command_arr);
                     return WRONG_ARGS;
@@ -398,6 +434,7 @@ int main(int argc, char** argv)
                 stack_pop(&int_proc_stack, &pop_1);
                 if(stack_pop(&int_proc_stack, &pop_2) == NULL_SIZE_OF_STACK)
                 {
+                    stack_destroy(&refund_stack);
                     stack_destroy(&int_proc_stack);
                     free(command_arr);
                     return NULL_SIZE_OF_STACK;
@@ -453,6 +490,11 @@ int main(int argc, char** argv)
 
                     int_arg_handler_1(&arg_1, curr_args_flags, reg_arr, &arg_counter, args);
 
+                    if(curr_args_flags.reg_flag_2) //same as jmp_label_flag
+                    {
+                        stack_push(&refund_stack, &command_counter);
+                    }
+
                     if(arg_1 < 0 || arg_1 >= num_of_commands)
                     {
                         stack_destroy(&int_proc_stack);
@@ -468,6 +510,7 @@ int main(int argc, char** argv)
         }
         command_counter++;
     }
+    stack_destroy(&refund_stack);
     stack_destroy(&int_proc_stack);
     free(command_arr);
     return NO_ERRORS;

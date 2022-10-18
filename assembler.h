@@ -10,7 +10,8 @@ enum ERRORS
     WRONG_LABEL_NAME = 4,
     WRONG_NUM_ARG = 5,
     WRONG_REG_ARG = 6,
-    WRITE_TO_FILE_ERROR = 7
+    WRITE_TO_FILE_ERROR = 7,
+    NO_MAIN_LABEL = 8
 };
 
 struct line_poz
