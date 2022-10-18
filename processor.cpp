@@ -174,6 +174,8 @@ int main(int argc, char** argv)
             break;
         }
 
+
+        //блок комманд числовых операторов, придумать оптимизацию
         case CMD_ADD:
         {
             if(num_of_args == 0)
@@ -218,7 +220,141 @@ int main(int argc, char** argv)
 
             break;
         }
+        case CMD_MUL:
+        {
+            if(num_of_args == 0)
+            {
+                int pop_1;
+                int pop_2; 
+
+                stack_pop(&int_proc_stack, &pop_1);
+                if(stack_pop(&int_proc_stack, &pop_2) == NULL_SIZE_OF_STACK)
+                {
+                    stack_destroy(&int_proc_stack);
+                    free(command_arr);
+                    return NULL_SIZE_OF_STACK;
+                }
+
+                pop_1 *= pop_2;
+                stack_push(&int_proc_stack , &pop_1);
+                break;
+            }
+            if(num_of_args == 1 || (curr_args_flags.num_flag_1 && !curr_args_flags.ram_flag_1))
+            {
+                stack_destroy(&int_proc_stack);
+                free(command_arr);
+                return WRONG_ARGS;
+            }
+
+            int arg_1 = 0;
+            int arg_2 = 0;
+
+            int_arg_handler_1(&arg_1, curr_args_flags, reg_arr, &arg_counter, args);
+            int_arg_handler_2(&arg_2, curr_args_flags, reg_arr, &arg_counter, args);
+
+            if(curr_args_flags.ram_flag_1)
+            {
+                ram_arr[arg_1] = ram_arr[arg_1] *
+                (curr_args_flags.ram_flag_2 ? ram_arr[arg_2] : arg_2);
+            }
+            else
+            {
+                reg_arr[args[0]] = arg_1 * (curr_args_flags.ram_flag_2 ? ram_arr[arg_2] : arg_2);
+            }
+
+            break;
         
+        }
+        case CMD_DIV:
+        {
+            if(num_of_args == 0)
+            {
+                int pop_1;
+                int pop_2; 
+
+                stack_pop(&int_proc_stack, &pop_1);
+                if(stack_pop(&int_proc_stack, &pop_2) == NULL_SIZE_OF_STACK)
+                {
+                    stack_destroy(&int_proc_stack);
+                    free(command_arr);
+                    return NULL_SIZE_OF_STACK;
+                }
+
+                pop_1 /= pop_2;
+                stack_push(&int_proc_stack , &pop_1);
+                break;
+            }
+            if(num_of_args == 1 || (curr_args_flags.num_flag_1 && !curr_args_flags.ram_flag_1))
+            {
+                stack_destroy(&int_proc_stack);
+                free(command_arr);
+                return WRONG_ARGS;
+            }
+
+            int arg_1 = 0;
+            int arg_2 = 0;
+
+            int_arg_handler_1(&arg_1, curr_args_flags, reg_arr, &arg_counter, args);
+            int_arg_handler_2(&arg_2, curr_args_flags, reg_arr, &arg_counter, args);
+
+            if(curr_args_flags.ram_flag_1)
+            {
+                ram_arr[arg_1] = ram_arr[arg_1] /
+                (curr_args_flags.ram_flag_2 ? ram_arr[arg_2] : arg_2);
+            }
+            else
+            {
+                reg_arr[args[0]] = arg_1 / (curr_args_flags.ram_flag_2 ? ram_arr[arg_2] : arg_2);
+            }
+
+            break;
+        }
+        case CMD_SUB:
+        {
+            if(num_of_args == 0)
+            {
+                int pop_1;
+                int pop_2; 
+
+                stack_pop(&int_proc_stack, &pop_1);
+                if(stack_pop(&int_proc_stack, &pop_2) == NULL_SIZE_OF_STACK)
+                {
+                    stack_destroy(&int_proc_stack);
+                    free(command_arr);
+                    return NULL_SIZE_OF_STACK;
+                }
+
+                pop_1 -= pop_2;
+                stack_push(&int_proc_stack , &pop_1);
+                break;
+            }
+            if(num_of_args == 1 || (curr_args_flags.num_flag_1 && !curr_args_flags.ram_flag_1))
+            {
+                stack_destroy(&int_proc_stack);
+                free(command_arr);
+                return WRONG_ARGS;
+            }
+
+            int arg_1 = 0;
+            int arg_2 = 0;
+
+            int_arg_handler_1(&arg_1, curr_args_flags, reg_arr, &arg_counter, args);
+            int_arg_handler_2(&arg_2, curr_args_flags, reg_arr, &arg_counter, args);
+
+            if(curr_args_flags.ram_flag_1)
+            {
+                ram_arr[arg_1] = ram_arr[arg_1] -
+                (curr_args_flags.ram_flag_2 ? ram_arr[arg_2] : arg_2);
+            }
+            else
+            {
+                reg_arr[args[0]] = arg_1 - (curr_args_flags.ram_flag_2 ? ram_arr[arg_2] : arg_2);
+            }
+
+            break;
+        }
+
+
         default:
             break;
         }
