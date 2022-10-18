@@ -193,7 +193,8 @@ int read_command_arg(line_poz arg_str, label labels_arr[], int num_of_labels, in
         }
     }
 
-    if(op_code == CMD_JMP)
+    if(op_code == CMD_JMP || op_code == CMD_JA || op_code == CMD_JAE || op_code == CMD_JB || op_code == CMD_JBE ||
+    op_code == CMD_JE || op_code == CMD_JNE)
     {
         for(int i = 0; i < num_of_labels; i++)
         {

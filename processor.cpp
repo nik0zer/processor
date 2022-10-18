@@ -363,7 +363,6 @@ int main(int argc, char** argv)
                 free(command_arr);
                 return WRONG_ARGS;
             }
-            
             int arg_1 = 0;
 
             int_arg_handler_1(&arg_1, curr_args_flags, reg_arr, &arg_counter, args);
@@ -382,7 +381,90 @@ int main(int argc, char** argv)
 
 
         default:
+        {
+            if(op_code == CMD_JA || op_code == CMD_JAE || op_code == CMD_JB || op_code == CMD_JBE ||
+            op_code == CMD_JE || op_code == CMD_JNE)
+            {
+                if(num_of_args < 1)
+                {
+                    stack_destroy(&int_proc_stack);
+                    free(command_arr);
+                    return WRONG_ARGS;
+                }
+                
+                int pop_1;
+                int pop_2; 
+
+                stack_pop(&int_proc_stack, &pop_1);
+                if(stack_pop(&int_proc_stack, &pop_2) == NULL_SIZE_OF_STACK)
+                {
+                    stack_destroy(&int_proc_stack);
+                    free(command_arr);
+                    return NULL_SIZE_OF_STACK;
+                }
+
+                int jmp_flag = 0;
+                            
+                switch (op_code)
+                {
+                case CMD_JA:
+                    if(pop_1 > pop_2)
+                    {
+                        jmp_flag = 1;
+                    }
+                    break;
+                case CMD_JAE:
+                    if(pop_1 >= pop_2)
+                    {
+                        jmp_flag = 1;
+                    }
+                    break;
+                case CMD_JB:
+                    if(pop_1 < pop_2)
+                    {
+                        jmp_flag = 1;
+                    }
+                    break;
+                case CMD_JBE:
+                    if(pop_1 <= pop_2)
+                    {
+                        jmp_flag = 1;
+                    }
+                    break;
+                case CMD_JE:
+                    if(pop_1 == pop_2)
+                    {
+                        jmp_flag = 1;
+                    }
+                    break;
+                case CMD_JNE:
+                    if(pop_1 != pop_2)
+                    {
+                        jmp_flag = 1;
+                    }
+                    break;
+                default:
+                    break;
+                }
+
+                if(jmp_flag)
+                {
+                    int arg_1 = 0;
+
+                    int_arg_handler_1(&arg_1, curr_args_flags, reg_arr, &arg_counter, args);
+
+                    if(arg_1 < 0 || arg_1 >= num_of_commands)
+                    {
+                        stack_destroy(&int_proc_stack);
+                        free(command_arr);
+                        return WRONG_JMP_ADDRESS;
+                    }
+
+                    command_counter = arg_1 - 1;
+                }
+            }
             break;
+        }
         }
         command_counter++;
     }

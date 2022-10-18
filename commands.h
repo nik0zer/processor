@@ -33,7 +33,14 @@ enum COMMANDS
     CMD_OUT = 6,
     CMD_HLT = 7,
     CMD_LBL = 8,
-    CMD_JMP = 10
+    CMD_JMP = 10,
+    CMD_JB = 11,
+    CMD_JBE = 12,
+    CMD_JA = 13,
+    CMD_JAE = 14,
+    CMD_JE = 15,
+    CMD_JNE = 16,
+    CMD_RET = 17
 };
 
 enum REGISTERS
@@ -60,7 +67,14 @@ const commands_informations COMMANDS_ATTRIBUTES[] =
     {"out", CMD_OUT, 1, 1},
     {"hlt", CMD_HLT, 0, 0},
     {"", CMD_LBL, 0, 0},
-    {"jmp", CMD_JMP, 1, 1}
+    {"jmp", CMD_JMP, 1, 1},
+    {"jb", CMD_JB, 1, 1},
+    {"jbe", CMD_JBE, 1, 1},
+    {"ja", CMD_JA, 1, 1},
+    {"jae", CMD_JAE, 1, 1},
+    {"je", CMD_JE, 1, 1},
+    {"jne", CMD_JNE, 1, 1},
+    {"ret", CMD_RET, 0, 0}
 };
 
 const registers_informations REGISTERS_ATTRIBUTES[] = 
