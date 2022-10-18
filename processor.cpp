@@ -98,6 +98,8 @@ int main(int argc, char** argv)
         {
             if(num_of_args < 1 || (!curr_args_flags.ram_flag_1 && curr_args_flags.num_flag_1))
             {
+                stack_destroy(&int_proc_stack);
+                free(command_arr);
                 return WRONG_ARGS;
             }
 
@@ -105,6 +107,8 @@ int main(int argc, char** argv)
 
             if(stack_pop(&int_proc_stack, &pop) == NULL_SIZE_OF_STACK)
             {
+                stack_destroy(&int_proc_stack);
+                free(command_arr);
                 return NULL_SIZE_OF_STACK;
             }
 
@@ -125,6 +129,8 @@ int main(int argc, char** argv)
         {
             if(num_of_args < 1)
             {
+                stack_destroy(&int_proc_stack);
+                free(command_arr);
                 return WRONG_ARGS;
             }
             num_arg_t arg_1 = 0;
@@ -142,6 +148,8 @@ int main(int argc, char** argv)
         {
             if(num_of_args < 1 || (!curr_args_flags.ram_flag_1 && curr_args_flags.num_flag_1))
             {
+                stack_destroy(&int_proc_stack);
+                free(command_arr);
                 return WRONG_ARGS;
             }
             int arg_1 = 0;
