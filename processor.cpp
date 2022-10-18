@@ -19,15 +19,30 @@ enum
 };
 
 
-int int_arg_handler(int* arg, args_flags curr_args_flags, reg_t reg_arr[], int* arg_counter, arg_t args[])
+int int_arg_handler_1(int* arg, args_flags curr_args_flags, reg_t reg_arr[], int* arg_counter, arg_t args[])
 {
-            
+    *arg = 0;
+
     *arg += !curr_args_flags.reg_flag_1 ? 0 : reg_arr[args[*arg_counter]];
     *arg_counter += curr_args_flags.reg_flag_1;
 
     
     *arg += !curr_args_flags.num_flag_1 ? 0 : args[*arg_counter];
     *arg_counter += curr_args_flags.num_flag_1;
+
+    return NO_ERRORS;
+}
+
+int int_arg_handler_2(int* arg, args_flags curr_args_flags, reg_t reg_arr[], int* arg_counter, arg_t args[])
+{
+    *arg = 0;
+
+    *arg += !curr_args_flags.reg_flag_2 ? 0 : reg_arr[args[*arg_counter]];
+    *arg_counter += curr_args_flags.reg_flag_2;
+
+    
+    *arg += !curr_args_flags.num_flag_2 ? 0 : args[*arg_counter];
+    *arg_counter += curr_args_flags.num_flag_2;
 
     return NO_ERRORS;
 }
@@ -114,8 +129,8 @@ int main(int argc, char** argv)
 
             if(curr_args_flags.ram_flag_1)
             {
-                int arg_1;
-                int_arg_handler(&arg_1, curr_args_flags, reg_arr, &arg_counter, args);
+                int arg_1 = 0;
+                int_arg_handler_1(&arg_1, curr_args_flags, reg_arr, &arg_counter, args);
                 ram_arr[arg_1] = pop;
             }
             else
@@ -135,14 +150,15 @@ int main(int argc, char** argv)
             }
             num_arg_t arg_1 = 0;
 
-            int_arg_handler(&arg_1, curr_args_flags, reg_arr, &arg_counter, args);
+            int_arg_handler_1(&arg_1, curr_args_flags, reg_arr, &arg_counter, args);
 
             stack_push(&int_proc_stack, &(curr_args_flags.ram_flag_1 ? ram_arr[arg_1] : arg_1));
             break;
         }
         case CMD_HLT:
         {
-            command_counter = num_of_commands;
+            command_counter = num_of_commands + 1;
+            break;
         }
         case CMD_OUT:
         {
@@ -153,8 +169,54 @@ int main(int argc, char** argv)
                 return WRONG_ARGS;
             }
             int arg_1 = 0;
-            int_arg_handler(&arg_1, curr_args_flags, reg_arr, &arg_counter, args);
-            printf("%d\n", (curr_args_flags.ram_flag_1 ? ram_arr[arg_1] : reg_arr[args[0]]));
+            int_arg_handler_1(&arg_1, curr_args_flags, reg_arr, &arg_counter, args);
+            printf("out:%d\n", (curr_args_flags.ram_flag_1 ? ram_arr[arg_1] : reg_arr[args[0]]));
+            break;
+        }
+
+        case CMD_ADD:
+        {
+            if(num_of_args == 0)
+            {
+                int pop_1;
+                int pop_2; 
+
+                stack_pop(&int_proc_stack, &pop_1);
+                if(stack_pop(&int_proc_stack, &pop_2) == NULL_SIZE_OF_STACK)
+                {
+                    stack_destroy(&int_proc_stack);
+                    free(command_arr);
+                    return NULL_SIZE_OF_STACK;
+                }
+
+                pop_1 += pop_2;
+                stack_push(&int_proc_stack , &pop_1);
+                break;
+            }
+            if(num_of_args == 1 || (curr_args_flags.num_flag_1 && !curr_args_flags.ram_flag_1))
+            {
+                stack_destroy(&int_proc_stack);
+                free(command_arr);
+                return WRONG_ARGS;
+            }
+
+            int arg_1 = 0;
+            int arg_2 = 0;
+
+            int_arg_handler_1(&arg_1, curr_args_flags, reg_arr, &arg_counter, args);
+            int_arg_handler_2(&arg_2, curr_args_flags, reg_arr, &arg_counter, args);
+
+            if(curr_args_flags.ram_flag_1)
+            {
+                ram_arr[arg_1] = ram_arr[arg_1] +
+                (curr_args_flags.ram_flag_2 ? ram_arr[arg_2] : arg_2);
+            }
+            else
+            {
+                reg_arr[args[0]] = arg_1 + (curr_args_flags.ram_flag_2 ? ram_arr[arg_2] : arg_2);
+            }
+
+            break;
         }
         
         default:
