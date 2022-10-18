@@ -63,6 +63,7 @@ int main(int argc, char** argv)
 
     reg_t reg_arr[NUM_OF_REGISTERS] = {};
     ram_t ram_arr[SIZE_OF_RAM] = {};
+    printf("\n");
 
     while(command_counter < num_of_commands)
     {
@@ -74,12 +75,7 @@ int main(int argc, char** argv)
 
         for(int i = 0; i < MAX_OF_READ_ARGS; i++)
         {
-            args[i] = command_arr[1 + i + command_counter * SIZE_OF_COMMAND];
-        }
-        printf("%d %d ", op_code, num_of_args);
-        for(int j = 0; j < MAX_OF_READ_ARGS; j++)
-        {
-            printf("%d ", args[j]);
+            args[i] = command_arr[command_counter * SIZE_OF_COMMAND + 1 + i];
         }
 
         int arg_counter = 0;
@@ -105,9 +101,6 @@ int main(int argc, char** argv)
                 return WRONG_ARGS;
             }
 
-            int arg_1;
-            stack_push(&int_proc_stack, &(curr_args_flags.ram_flag_1 ? ram_arr[arg_1] : arg_1));
-
             int pop;
 
             if(stack_pop(&int_proc_stack, &pop) == NULL_SIZE_OF_STACK)
@@ -117,11 +110,13 @@ int main(int argc, char** argv)
 
             if(curr_args_flags.ram_flag_1)
             {
+                int arg_1;
+                int_arg_handler(&arg_1, curr_args_flags, reg_arr, &arg_counter, args);
                 ram_arr[arg_1] = pop;
             }
             else
             {
-                reg_arr[arg_1] = pop;
+                reg_arr[args[0]] = pop;
             }
 
             break;
@@ -139,13 +134,26 @@ int main(int argc, char** argv)
             stack_push(&int_proc_stack, &(curr_args_flags.ram_flag_1 ? ram_arr[arg_1] : arg_1));
             break;
         }
+        case CMD_HLT:
+        {
+            command_counter = num_of_commands;
+        }
+        case CMD_OUT:
+        {
+            if(num_of_args < 1 || (!curr_args_flags.ram_flag_1 && curr_args_flags.num_flag_1))
+            {
+                return WRONG_ARGS;
+            }
+            int arg_1 = 0;
+            int_arg_handler(&arg_1, curr_args_flags, reg_arr, &arg_counter, args);
+            printf("%d\n", (curr_args_flags.ram_flag_1 ? ram_arr[arg_1] : reg_arr[args[0]]));
+        }
         
         default:
-        break;
+            break;
         }
 
 
-        printf("\n");
         command_counter++;
     }
     stack_destroy(&int_proc_stack);

@@ -13,13 +13,6 @@ enum ERRORS
     WRITE_TO_FILE_ERROR = 7
 };
 
-enum assembler_constants
-{
-    HALF_BYTE = 4,
-    BYTE = 8,
-    MAX_OF_READ_ARGS = 4
-};
-
 struct line_poz
 {
     char* start;

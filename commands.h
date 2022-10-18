@@ -23,7 +23,7 @@ struct registers_informations
 
 enum COMMANDS
 {
-    CMD_POP = 0,
+    CMD_POP = 9,
     CMD_PUSH = 1,
     CMD_ADD = 2,
     CMD_SUB = 3,
@@ -56,7 +56,8 @@ const commands_informations COMMANDS_ATTRIBUTES[] =
     {"sub", CMD_SUB, 2},
     {"mul", CMD_MUL, 2},
     {"div", CMD_DIV, 2},
-    {"out", CMD_HLT, 2},
+    {"out", CMD_OUT, 1},
+    {"hlt", CMD_HLT, 0},
     {"", CMD_LBL, 0},
     {"jmp", CMD_JMP, 1}
 };
