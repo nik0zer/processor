@@ -1,6 +1,13 @@
 #ifndef COMMANDS_H
 #define COMMANDS_H
 
+enum assembler_constants
+{
+    HALF_BYTE = 4,
+    BYTE = 8,
+    MAX_OF_READ_ARGS = 4
+};
+
 struct commands_informations
 {
     char* command_str;
@@ -16,6 +23,7 @@ struct registers_informations
 
 enum COMMANDS
 {
+    CMD_POP = 0,
     CMD_PUSH = 1,
     CMD_ADD = 2,
     CMD_SUB = 3,
@@ -36,11 +44,13 @@ enum REGISTERS
     REG_RBP = 4,
     REG_RSI = 5,
     REG_RDI = 6,
-    REG_RSP = 7
+    REG_RSP = 7,
+    NUM_OF_REGISTERS = 8
 };
 
 const commands_informations COMMANDS_ATTRIBUTES[] = 
 {
+    {"pop", CMD_POP, 1},
     {"push", CMD_PUSH, 1},
     {"add", CMD_ADD, 2},
     {"sub", CMD_SUB, 2},

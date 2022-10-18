@@ -3,8 +3,8 @@ CC = g++
 
 all: processor assembler disassembler
 
-processor: processor.o
-	$(CC) -fsanitize=address,leak processor.o -o processor
+processor: processor.o processor.h stack.o stack.h
+	$(CC) -fsanitize=address,leak processor.o stack.o -o processor
 
 assembler: assembler.o assembler.h
 	$(CC) -fsanitize=address,leak assembler.o -o assembler
@@ -12,8 +12,11 @@ assembler: assembler.o assembler.h
 disassembler: disassembler.o
 	$(CC) -fsanitize=address,leak disassembler.o -o disassembler
 
-processor.o: processor.cpp
+processor.o: processor.cpp processor.h
 	$(CC) $(CFLAGS) processor.cpp
+
+stack.o: stack.cpp stack.h
+	$(CC) $(CFLAGS) stack.cpp
 
 assembler.o: assembler.cpp assembler.h
 	$(CC) $(CFLAGS) assembler.cpp
