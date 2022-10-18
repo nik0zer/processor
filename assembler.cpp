@@ -14,22 +14,33 @@
 
 const char* out_file_name = "processor.out";
 
-int get_num_of_args(int opcode)
+int get_num_of_args(int op_code)
 {
     for(int i = 0; i < sizeof(COMMANDS_ATTRIBUTES) / sizeof(commands_informations); i++)
     {
-        if(COMMANDS_ATTRIBUTES[i].opcode == opcode)
+        if(COMMANDS_ATTRIBUTES[i].op_code == op_code)
         {
             return COMMANDS_ATTRIBUTES[i].max_num_of_args;
         }
     }
 }
 
-char* get_command_str(int opcode)
+int get_min_num_of_args(int op_code)
 {
     for(int i = 0; i < sizeof(COMMANDS_ATTRIBUTES) / sizeof(commands_informations); i++)
     {
-        if(COMMANDS_ATTRIBUTES[i].opcode == opcode)
+        if(COMMANDS_ATTRIBUTES[i].op_code == op_code)
+        {
+            return COMMANDS_ATTRIBUTES[i].min_num_of_args;
+        }
+    }
+}
+
+char* get_command_str(int op_code)
+{
+    for(int i = 0; i < sizeof(COMMANDS_ATTRIBUTES) / sizeof(commands_informations); i++)
+    {
+        if(COMMANDS_ATTRIBUTES[i].op_code == op_code)
         {
             return COMMANDS_ATTRIBUTES[i].command_str;
         }
@@ -89,6 +100,11 @@ int liner_text(char* file, int size_of_file, int* num_of_lines, line_poz** lines
 
     *num_of_lines = 0;
     auto lines = *lines_ptr;
+
+    for(int i = 0; i < *num_of_lines; i++)
+    {
+        lines[i].start = NULL;
+    }
     
     lines[*num_of_lines].start;
     bool space_flag = true;
@@ -116,7 +132,7 @@ int liner_text(char* file, int size_of_file, int* num_of_lines, line_poz** lines
     return NO_ERRORS;
 }
 
-int read_command_arg(line_poz arg_str, label labels_arr[], int num_of_labels, int opcode, arg_val* read_arg_val)
+int read_command_arg(line_poz arg_str, label labels_arr[], int num_of_labels, int op_code, arg_val* read_arg_val)
 {
     if(read_arg_val == NULL)
     {
@@ -128,6 +144,7 @@ int read_command_arg(line_poz arg_str, label labels_arr[], int num_of_labels, in
     read_arg_val->num_arg_flag = 0;
     read_arg_val->reg_arg_flag = 0;
     read_arg_val->ram_arg_flag = 0;
+
     if(sscanf(arg_str.start, "%d", &(read_arg_val->num_arg)))
     {
         read_arg_val->num_arg_flag = 1;
@@ -176,7 +193,7 @@ int read_command_arg(line_poz arg_str, label labels_arr[], int num_of_labels, in
         }
     }
 
-    if(opcode == CMD_JMP)
+    if(op_code == CMD_JMP)
     {
         for(int i = 0; i < num_of_labels; i++)
         {
@@ -209,14 +226,14 @@ int asm_to_file(FILE* file_ptr, line_poz* lines_command_arr, int num_of_lines)
         liner_text(lines_command_arr[i].start, strlen(lines_command_arr[i].start),
         &num_of_args, &command_content, 1);
 
-        int curr_command_code = 0;
+        int op_code = 0;
 
         int label_flag = 1;
         for (int j = 0; j < sizeof(COMMANDS_ATTRIBUTES) / sizeof(commands_informations); j++)
         {
             if(strcmp(COMMANDS_ATTRIBUTES[j].command_str, command_content[0].start) == 0)
             {
-                curr_command_code = COMMANDS_ATTRIBUTES[j].opcode;
+                op_code = COMMANDS_ATTRIBUTES[j].op_code;
                 label_flag = 0;
             }
         }
@@ -236,16 +253,16 @@ int asm_to_file(FILE* file_ptr, line_poz* lines_command_arr, int num_of_lines)
                     }
                 }
 
-                curr_command_code = CMD_LBL;
+                op_code = CMD_LBL;
                 num_of_labels++;
             }
         }
 
-        printf("%d ", curr_command_code);
+        printf("%d ", op_code);
 
         num_of_args--;
         line_poz* args = command_content + 1;
-        if(num_of_args > get_num_of_args(curr_command_code))
+        if(num_of_args > get_num_of_args(op_code))
         {
             free(command_content);
             return WRONG_NUM_OF_ARGS;
@@ -259,8 +276,12 @@ int asm_to_file(FILE* file_ptr, line_poz* lines_command_arr, int num_of_lines)
 
         for(int j = 0; j < num_of_args; j++)
         {
+            if(command_content[j].start == NULL)
+            {
+                break;
+            }
             arg_val read_arg_val;
-            read_command_arg(args[j], labels_arr, num_of_labels, curr_command_code,
+            read_command_arg(args[j], labels_arr, num_of_labels, op_code,
             &read_arg_val);
 
 
@@ -276,9 +297,15 @@ int asm_to_file(FILE* file_ptr, line_poz* lines_command_arr, int num_of_lines)
             num_of_read_args += read_arg_val.num_arg_flag;
         }
 
-        curr_command_code = (curr_command_code << BYTE * 2) | (num_of_read_args << BYTE) | arg_mask;
+        if(num_of_read_args < get_min_num_of_args(op_code))
+        {
+            free(command_content);
+            return WRONG_NUM_OF_ARGS;
+        }
 
-        if(fwrite(&curr_command_code, sizeof(int), 1, file_ptr) != 1)
+        op_code = (op_code << BYTE * 2) | (num_of_read_args << BYTE) | arg_mask;
+
+        if(fwrite(&op_code, sizeof(int), 1, file_ptr) != 1)
         {
             free(command_content);
             return WRITE_TO_FILE_ERROR;
@@ -290,7 +317,7 @@ int asm_to_file(FILE* file_ptr, line_poz* lines_command_arr, int num_of_lines)
             return WRITE_TO_FILE_ERROR;
         }
 
-        printf("%X ", curr_command_code);
+        printf("%X ", op_code);
 
         for(int j = 0; j < MAX_OF_READ_ARGS; j++)
         {
@@ -325,7 +352,15 @@ int main(int argc, char** argv)
 
     fwrite(&num_of_commands, sizeof(int), 1, proc_command_file);
 
-    asm_to_file(proc_command_file, lines_command_arr, num_of_commands);
+    int err_code = asm_to_file(proc_command_file, lines_command_arr, num_of_commands);
+
+    if(err_code != NO_ERRORS);
+    {
+        fclose(proc_command_file);
+        free(lines_command_arr);
+        free(file_str);
+        return err_code;
+    }
 
     fclose(proc_command_file);
     free(lines_command_arr);

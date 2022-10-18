@@ -11,8 +11,9 @@ enum assembler_constants
 struct commands_informations
 {
     char* command_str;
-    int opcode;
+    int op_code;
     int max_num_of_args;
+    int min_num_of_args;
 };
 
 struct registers_informations
@@ -50,16 +51,16 @@ enum REGISTERS
 
 const commands_informations COMMANDS_ATTRIBUTES[] = 
 {
-    {"pop", CMD_POP, 1},
-    {"push", CMD_PUSH, 1},
-    {"add", CMD_ADD, 2},
-    {"sub", CMD_SUB, 2},
-    {"mul", CMD_MUL, 2},
-    {"div", CMD_DIV, 2},
-    {"out", CMD_OUT, 1},
-    {"hlt", CMD_HLT, 0},
-    {"", CMD_LBL, 0},
-    {"jmp", CMD_JMP, 1}
+    {"pop", CMD_POP, 1, 1},
+    {"push", CMD_PUSH, 1, 1},
+    {"add", CMD_ADD, 2, 0},
+    {"sub", CMD_SUB, 2, 0},
+    {"mul", CMD_MUL, 2, 0},
+    {"div", CMD_DIV, 2, 0},
+    {"out", CMD_OUT, 1, 1},
+    {"hlt", CMD_HLT, 0, 0},
+    {"", CMD_LBL, 0, 0},
+    {"jmp", CMD_JMP, 1, 1}
 };
 
 const registers_informations REGISTERS_ATTRIBUTES[] = 

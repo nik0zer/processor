@@ -5,7 +5,8 @@ enum ERRORS
 {
     FILE_OPEN_ERROR = 1,
     NOT_ENOUGH_ARGV = 2,
-    WRONG_ARGS = 3
+    WRONG_ARGS = 3,
+    WRONG_JMP_ADDRESS = 4
 };
 
 struct args_flags

@@ -87,6 +87,7 @@ int main(int argc, char** argv)
         int op_code = (command_arr[command_counter * SIZE_OF_COMMAND] & 0xFFFF0000) >> (BYTE * 2);
         int num_of_args = (command_arr[command_counter * SIZE_OF_COMMAND] & 0x0000FF00) >> (BYTE * 1);
         arg_t args[MAX_OF_READ_ARGS] = {};
+        printf("address: %d\n", command_counter);
 
         for(int i = 0; i < MAX_OF_READ_ARGS; i++)
         {
@@ -354,12 +355,35 @@ int main(int argc, char** argv)
             break;
         }
 
+        case CMD_JMP:
+        {
+            if(num_of_args < 1)
+            {
+                stack_destroy(&int_proc_stack);
+                free(command_arr);
+                return WRONG_ARGS;
+            }
+            
+            int arg_1 = 0;
 
-        default:
+            int_arg_handler_1(&arg_1, curr_args_flags, reg_arr, &arg_counter, args);
+
+            if(arg_1 < 0 || arg_1 >= num_of_commands)
+            {
+                stack_destroy(&int_proc_stack);
+                free(command_arr);
+                return WRONG_JMP_ADDRESS;
+            }
+
+            command_counter = arg_1 - 1;
+
             break;
         }
 
 
+        default:
+            break;
+        }
         command_counter++;
     }
     stack_destroy(&int_proc_stack);
