@@ -9,7 +9,7 @@ processor: processor.o processor.h stack.o stack.h commands.h
 assembler: assembler.o assembler.h commands.h
 	$(CC) -fsanitize=address,leak assembler.o -o assembler
 
-disassembler: disassembler.o commands.h
+disassembler: disassembler.o commands.h disassembler.h
 	$(CC) -fsanitize=address,leak disassembler.o -o disassembler
 
 processor.o: processor.cpp processor.h commands.h
@@ -21,7 +21,7 @@ stack.o: stack.cpp stack.h
 assembler.o: assembler.cpp assembler.h commands.h
 	$(CC) $(CFLAGS) assembler.cpp
 
-disassembler.o: disassembler.cpp commands.h
+disassembler.o: disassembler.cpp commands.h disassembler.h
 	$(CC) $(CFLAGS) disassembler.cpp
 
 clean:

@@ -16,7 +16,7 @@ const char* MAIN_LABEL_NAME = "main";
 
 int get_num_of_args(int op_code)
 {
-    for(int i = 0; i < sizeof(COMMANDS_ATTRIBUTES) / sizeof(commands_informations); i++)
+    for(int i = 0; i < SIZEOF_COMMANDS_ATTRIBUTES; i++)
     {
         if(COMMANDS_ATTRIBUTES[i].op_code == op_code)
         {
@@ -27,7 +27,7 @@ int get_num_of_args(int op_code)
 
 int get_min_num_of_args(int op_code)
 {
-    for(int i = 0; i < sizeof(COMMANDS_ATTRIBUTES) / sizeof(commands_informations); i++)
+    for(int i = 0; i < SIZEOF_COMMANDS_ATTRIBUTES; i++)
     {
         if(COMMANDS_ATTRIBUTES[i].op_code == op_code)
         {
@@ -38,7 +38,7 @@ int get_min_num_of_args(int op_code)
 
 char* get_command_str(int op_code)
 {
-    for(int i = 0; i < sizeof(COMMANDS_ATTRIBUTES) / sizeof(commands_informations); i++)
+    for(int i = 0; i < SIZEOF_COMMANDS_ATTRIBUTES; i++)
     {
         if(COMMANDS_ATTRIBUTES[i].op_code == op_code)
         {
@@ -182,7 +182,7 @@ int read_command_arg(line_poz arg_str, label labels_arr[], int num_of_labels, in
         }
     }
 
-    for(int i = 0; i < sizeof(REGISTERS_ATTRIBUTES) / sizeof(registers_informations); i++)
+    for(int i = 0; i < SIZEOF_REGISTERS_ATTRIBUTES; i++)
     { 
         
         if(strcmp(arg_str.start, REGISTERS_ATTRIBUTES[i].register_str) == 0)
@@ -232,7 +232,7 @@ int asm_to_file(FILE* file_ptr, line_poz* lines_command_arr, int num_of_lines)
         int op_code = 0;
 
         int label_flag = 1;
-        for (int j = 0; j < sizeof(COMMANDS_ATTRIBUTES) / sizeof(commands_informations); j++)
+        for (int j = 0; j < SIZEOF_COMMANDS_ATTRIBUTES; j++)
         {
             if(strcmp(COMMANDS_ATTRIBUTES[j].command_str, command_content[0].start) == 0)
             {

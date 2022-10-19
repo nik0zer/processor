@@ -5,8 +5,12 @@ enum assembler_constants
 {
     HALF_BYTE = 4,
     BYTE = 8,
-    MAX_OF_READ_ARGS = 4
+    MAX_OF_READ_ARGS = 4,
+    MAX_SIZE_OF_COMMAND_STR = 5,
+    SIZE_OF_COMMAND = 5,
+    SIZE_OF_ARG = 19
 };
+
 
 struct commands_informations
 {
@@ -88,5 +92,8 @@ const registers_informations REGISTERS_ATTRIBUTES[] =
     {"rdi", REG_RDI},
     {"rsp", REG_RSP}
 };
+
+const int SIZEOF_REGISTERS_ATTRIBUTES = sizeof(REGISTERS_ATTRIBUTES) / sizeof(registers_informations);
+const int SIZEOF_COMMANDS_ATTRIBUTES = sizeof(COMMANDS_ATTRIBUTES) / sizeof(commands_informations);
 
 #endif

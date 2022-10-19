@@ -13,12 +13,6 @@ typedef int reg_t;
 typedef int ram_t;
 typedef int num_arg_t;
 
-enum
-{
-    SIZE_OF_COMMAND = 5
-};
-
-
 int int_arg_handler_1(int* arg, args_flags curr_args_flags, reg_t reg_arr[], int* arg_counter, arg_t args[])
 {
     *arg = 0;
