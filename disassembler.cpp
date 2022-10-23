@@ -9,6 +9,8 @@
 #define GET_NUM_FLAG(ARG_MASK) (ARG_MASK & 0x02) >> 1
 #define GET_RAM_FLAG(ARG_MASK) (ARG_MASK & 0x04) >> 2
 
+#define HALF_ARG_FLAGS_MASK 0xF
+
 char* get_command_str(int op_code)
 {
     for(int i = 0; i < SIZEOF_COMMANDS_ATTRIBUTES; i++)
@@ -74,7 +76,7 @@ int print_one_command(FILE* commands_file, int* command_content, FILE* listing_f
     char first_arg[SIZE_OF_ARG] = {};
     char second_arg[SIZE_OF_ARG] = {};
 
-    if(arg_mask & 0xF && get_num_of_args(op_code) >= 1)
+    if(arg_mask & HALF_ARG_FLAGS_MASK && get_num_of_args(op_code) >= 1)
     {
         char* arg_str_ptr = first_arg;
         if(GET_RAM_FLAG(arg_mask))
@@ -116,7 +118,7 @@ int print_one_command(FILE* commands_file, int* command_content, FILE* listing_f
 
     arg_mask = arg_mask >> HALF_BYTE;
     printf("\n%d %d ", num_of_command, arg_mask);
-    if(arg_mask & 0xF && get_num_of_args(op_code) >= 2)
+    if(arg_mask & HALF_ARG_FLAGS_MASK && get_num_of_args(op_code) >= 2)
     {
         char* arg_str_ptr = second_arg;
         if(GET_RAM_FLAG(arg_mask))
