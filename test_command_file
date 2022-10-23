@@ -1,0 +1,17 @@
+factorial:
+mul rbx rax
+sub rax 1
+push rax
+push 0
+out rax
+out rbx
+je 9
+call factorial
+ret
+
+main:
+add rbx 1
+in rax
+out rax
+call factorial
+hlt

@@ -10,7 +10,7 @@ enum assembler_constants
     SIZE_OF_COMMAND = 5,
     SIZE_OF_ARG = 19,
     NUM_OF_REGISTERS = 8,
-    NUM_OF_COMMANDS = 19
+    NUM_OF_COMMANDS = 20
 };
 
 
@@ -47,7 +47,8 @@ enum COMMANDS
     CMD_JE = 15,
     CMD_JNE = 16,
     CMD_RET = 17,
-    CMD_IN = 18
+    CMD_IN = 18,
+    CMD_CALL = 19
 };
 
 enum REGISTERS
@@ -81,7 +82,8 @@ const commands_informations COMMANDS_ATTRIBUTES[] =
     {"je", CMD_JE, 1, 1},
     {"jne", CMD_JNE, 1, 1},
     {"ret", CMD_RET, 0, 0},
-    {"in", CMD_IN, 0, 1}
+    {"in", CMD_IN, 1, 0},
+    {"call", CMD_CALL, 1, 1}
 };
 
 const registers_informations REGISTERS_ATTRIBUTES[] = 

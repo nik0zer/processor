@@ -12,6 +12,7 @@ typedef int arg_t;
 typedef int reg_t;
 typedef int ram_t;
 typedef int num_arg_t;
+typedef int in_val_t;
 
 int int_arg_handler_1(int* arg, args_flags curr_args_flags, reg_t reg_arr[], int* arg_counter, arg_t args[])
 {
@@ -290,12 +291,22 @@ int main(int argc, char** argv)
                 return WRONG_JMP_ADDRESS;
             }
 
-            if(curr_args_flags.reg_flag_2 == 1) //same as jmp_label_flag
+            command_counter = arg_1 - 1;
+        }
+
+        if(CMD_CALL == op_code)
+        {
+            if(num_of_args < 1 || (curr_args_flags.reg_flag_1 || curr_args_flags.ram_flag_1) || !curr_args_flags.reg_flag_2)
             {
-                stack_push(&refund_stack, &command_counter);
+                stack_destroy(&refund_stack);
+                stack_destroy(&int_proc_stack);
+                free(command_arr);
+                return WRONG_ARGS;
             }
 
-            command_counter = arg_1 - 1;
+            stack_push(&refund_stack, &command_counter);
+
+            command_counter = args[0] - 1;
         }
 
         if(CMD_RET == op_code)
@@ -375,6 +386,37 @@ int main(int argc, char** argv)
                 }
             }
         
+        if(op_code == CMD_IN)
+        {
+            in_val_t val;
+            printf("ENTER VALUE:\n");
+            scanf("%d", &val);
+            if(curr_args_flags.num_flag_1 && !curr_args_flags.ram_flag_1)
+            {
+                stack_destroy(&refund_stack);
+                stack_destroy(&int_proc_stack);
+                free(command_arr);
+                return WRONG_ARGS;
+            }
+            if(num_of_args == 0)
+            {
+                stack_push(&int_proc_stack, &val);
+            }
+            else
+            {
+                int arg;
+                int_arg_handler_1(&arg, curr_args_flags, reg_arr, &arg_counter, args);
+                if(curr_args_flags.ram_flag_1)
+                {
+                    ram_arr[arg] = val;
+                }
+                else
+                {
+                    reg_arr[args[0]] = val;
+                }
+            }
+        }
+
         command_counter++;
     }
     stack_destroy(&refund_stack);
