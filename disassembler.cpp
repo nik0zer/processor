@@ -62,7 +62,9 @@ int print_one_command(FILE* commands_file, int* command_content, FILE* listing_f
         fprintf(listing_file, "label with adress: %d", num_of_command);
     }
     else
-    fprintf(listing_file, "%s ", get_command_str(op_code));
+    {
+        fprintf(listing_file, "%s ", get_command_str(op_code));
+    }
 
     
 

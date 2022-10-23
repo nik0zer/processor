@@ -8,7 +8,9 @@ enum assembler_constants
     MAX_OF_READ_ARGS = 4,
     MAX_SIZE_OF_COMMAND_STR = 5,
     SIZE_OF_COMMAND = 5,
-    SIZE_OF_ARG = 19
+    SIZE_OF_ARG = 19,
+    NUM_OF_REGISTERS = 8,
+    NUM_OF_COMMANDS = 19
 };
 
 
@@ -44,7 +46,8 @@ enum COMMANDS
     CMD_JAE = 14,
     CMD_JE = 15,
     CMD_JNE = 16,
-    CMD_RET = 17
+    CMD_RET = 17,
+    CMD_IN = 18
 };
 
 enum REGISTERS
@@ -56,8 +59,7 @@ enum REGISTERS
     REG_RBP = 4,
     REG_RSI = 5,
     REG_RDI = 6,
-    REG_RSP = 7,
-    NUM_OF_REGISTERS = 8
+    REG_RSP = 7
 };
 
 const commands_informations COMMANDS_ATTRIBUTES[] = 
@@ -78,7 +80,8 @@ const commands_informations COMMANDS_ATTRIBUTES[] =
     {"jae", CMD_JAE, 1, 1},
     {"je", CMD_JE, 1, 1},
     {"jne", CMD_JNE, 1, 1},
-    {"ret", CMD_RET, 0, 0}
+    {"ret", CMD_RET, 0, 0},
+    {"in", CMD_IN, 0, 1}
 };
 
 const registers_informations REGISTERS_ATTRIBUTES[] = 

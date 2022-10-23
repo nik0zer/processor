@@ -308,7 +308,7 @@ int main(int argc, char** argv)
                 free(command_arr);
                 return NULL_SIZE_OF_STACK;
             }
-            command_counter = refund_address - 1;
+            command_counter = refund_address;
         }
         if(op_code == CMD_JA || op_code == CMD_JAE || op_code == CMD_JB || op_code == CMD_JBE ||
            op_code == CMD_JE || op_code == CMD_JNE)
@@ -337,41 +337,17 @@ int main(int argc, char** argv)
                             
                 switch (op_code)
                 {
-                case CMD_JA:
-                    if(pop_1 > pop_2)
-                    {
-                        jmp_flag = 1;
-                    }
+                case CMD_JA: jmp_flag = pop_1 > pop_2 ? 1 : 0;
                     break;
-                case CMD_JAE:
-                    if(pop_1 >= pop_2)
-                    {
-                        jmp_flag = 1;
-                    }
+                case CMD_JAE: jmp_flag = pop_1 >= pop_2 ? 1 : 0;
                     break;
-                case CMD_JB:
-                    if(pop_1 < pop_2)
-                    {
-                        jmp_flag = 1;
-                    }
+                case CMD_JB: jmp_flag = pop_1 < pop_2 ? 1 : 0;
                     break;
-                case CMD_JBE:
-                    if(pop_1 <= pop_2)
-                    {
-                        jmp_flag = 1;
-                    }
+                case CMD_JBE: jmp_flag = pop_1 <= pop_2 ? 1 : 0;
                     break;
-                case CMD_JE:
-                    if(pop_1 == pop_2)
-                    {
-                        jmp_flag = 1;
-                    }
+                case CMD_JE: jmp_flag = pop_1 == pop_2 ? 1 : 0;
                     break;
-                case CMD_JNE:
-                    if(pop_1 != pop_2)
-                    {
-                        jmp_flag = 1;
-                    }
+                case CMD_JNE: jmp_flag = pop_1 == pop_2 ? 1 : 0;
                     break;
                 default:
                     break;
