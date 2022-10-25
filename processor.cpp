@@ -8,6 +8,26 @@
 #define GET_NUM_FLAG(ARG_MASK) (ARG_MASK & 0x02) >> 1;
 #define GET_RAM_FLAG(ARG_MASK) (ARG_MASK & 0x04) >> 2;
 
+#define DEF_ASSIGMENT_RAM(DEST) \
+int arg_1 = 0;\
+int_arg_handler_1(&arg_1, curr_args_flags, reg_arr, &arg_counter, args);\
+ram_arr[arg_1] = DEST;
+
+#define DEF_ASSIGMENT_REG(DEST) \
+reg_arr[args[0]] = DEST;
+
+#define FREE \
+stack_destroy(&refund_stack);\
+stack_destroy(&int_proc_stack);\
+free(command_arr);
+
+#define DIGIT_OP_RAM(DIGIT_OPERATOR) \
+ram_arr[arg_1] = ram_arr[arg_1] DIGIT_OPERATOR (curr_args_flags.ram_flag_2 ? ram_arr[arg_2] : arg_2);
+
+#define DIGIT_OP_REG(DIGIT_OPERATOR) \
+reg_arr[args[0]] = arg_1 DIGIT_OPERATOR (curr_args_flags.ram_flag_2 ? ram_arr[arg_2] : arg_2);
+
+
 typedef int arg_t;
 typedef int reg_t;
 typedef int ram_t;
@@ -111,9 +131,7 @@ int main(int argc, char** argv)
         {
             if(num_of_args < 1 || (!curr_args_flags.ram_flag_1 && curr_args_flags.num_flag_1))
             {
-                stack_destroy(&refund_stack);
-                stack_destroy(&int_proc_stack);
-                free(command_arr);
+                FREE;
                 return WRONG_ARGS;
             }
 
@@ -121,30 +139,24 @@ int main(int argc, char** argv)
 
             if(stack_pop(&int_proc_stack, &pop) == NULL_SIZE_OF_STACK)
             {
-                stack_destroy(&refund_stack);
-                stack_destroy(&int_proc_stack);
-                free(command_arr);
+                FREE;
                 return NULL_SIZE_OF_STACK;
             }
 
             if(curr_args_flags.ram_flag_1)
             {
-                int arg_1 = 0;
-                int_arg_handler_1(&arg_1, curr_args_flags, reg_arr, &arg_counter, args);
-                ram_arr[arg_1] = pop;
+                DEF_ASSIGMENT_RAM(pop);
             }
             else
             {
-                reg_arr[args[0]] = pop;
+                DEF_ASSIGMENT_REG(pop);
             }
         }
         if(CMD_PUSH == op_code)
         {
             if(num_of_args < 1)
             {
-                stack_destroy(&refund_stack);
-                stack_destroy(&int_proc_stack);
-                free(command_arr);
+                FREE;
                 return WRONG_ARGS;
             }
             num_arg_t arg_1 = 0;
@@ -161,9 +173,7 @@ int main(int argc, char** argv)
         {
             if(num_of_args < 1 || (!curr_args_flags.ram_flag_1 && curr_args_flags.num_flag_1))
             {
-                stack_destroy(&refund_stack);
-                stack_destroy(&int_proc_stack);
-                free(command_arr);
+                FREE;
                 return WRONG_ARGS;
             }
             int arg_1 = 0;
@@ -183,8 +193,7 @@ int main(int argc, char** argv)
                 stack_pop(&int_proc_stack, &pop_1);
                 if(stack_pop(&int_proc_stack, &pop_2) == NULL_SIZE_OF_STACK)
                 {
-                    stack_destroy(&int_proc_stack);
-                    free(command_arr);
+                    FREE;
                     return NULL_SIZE_OF_STACK;
                 }
 
@@ -211,9 +220,7 @@ int main(int argc, char** argv)
             {
                 if(num_of_args == 1 || (curr_args_flags.num_flag_1 && !curr_args_flags.ram_flag_1))
                 {
-                    stack_destroy(&refund_stack);
-                    stack_destroy(&int_proc_stack);
-                    free(command_arr);
+                    FREE;
                     return WRONG_ARGS;
                 }
 
@@ -228,20 +235,16 @@ int main(int argc, char** argv)
                     switch (op_code)
                     {
                     case CMD_ADD:
-                        ram_arr[arg_1] = ram_arr[arg_1] +
-                        (curr_args_flags.ram_flag_2 ? ram_arr[arg_2] : arg_2);
+                        DIGIT_OP_RAM(+);
                         break;
                     case CMD_DIV:
-                        ram_arr[arg_1] = ram_arr[arg_1] /
-                        (curr_args_flags.ram_flag_2 ? ram_arr[arg_2] : arg_2);
+                        DIGIT_OP_RAM(/);
                         break;
                     case CMD_MUL:
-                        ram_arr[arg_1] = ram_arr[arg_1] *
-                        (curr_args_flags.ram_flag_2 ? ram_arr[arg_2] : arg_2);
+                        DIGIT_OP_RAM(*);
                         break;
                     case CMD_SUB:
-                        ram_arr[arg_1] = ram_arr[arg_1] -
-                        (curr_args_flags.ram_flag_2 ? ram_arr[arg_2] : arg_2);
+                        DIGIT_OP_RAM(-);
                         break;
                     default:
                         break;
@@ -252,16 +255,16 @@ int main(int argc, char** argv)
                     switch (op_code)
                     {
                     case CMD_ADD:
-                        reg_arr[args[0]] = arg_1 + (curr_args_flags.ram_flag_2 ? ram_arr[arg_2] : arg_2);
+                        DIGIT_OP_REG(+);
                         break;
                     case CMD_DIV:
-                        reg_arr[args[0]] = arg_1 / (curr_args_flags.ram_flag_2 ? ram_arr[arg_2] : arg_2);
+                        DIGIT_OP_REG(/);
                         break;
                     case CMD_MUL:
-                        reg_arr[args[0]] = arg_1 * (curr_args_flags.ram_flag_2 ? ram_arr[arg_2] : arg_2);
+                        DIGIT_OP_REG(*);
                         break;
                     case CMD_SUB:
-                        reg_arr[args[0]] = arg_1 - (curr_args_flags.ram_flag_2 ? ram_arr[arg_2] : arg_2);
+                        DIGIT_OP_REG(-);
                         break;
                     default:
                         break;
@@ -274,9 +277,7 @@ int main(int argc, char** argv)
         {
             if(num_of_args < 1)
             {
-                stack_destroy(&refund_stack);
-                stack_destroy(&int_proc_stack);
-                free(command_arr);
+                FREE;
                 return WRONG_ARGS;
             }
             int arg_1 = 0;
@@ -285,9 +286,7 @@ int main(int argc, char** argv)
 
             if(arg_1 < 0 || arg_1 >= num_of_commands)
             {
-                stack_destroy(&refund_stack);
-                stack_destroy(&int_proc_stack);
-                free(command_arr);
+                FREE;
                 return WRONG_JMP_ADDRESS;
             }
 
@@ -298,9 +297,7 @@ int main(int argc, char** argv)
         {
             if(num_of_args < 1 || (curr_args_flags.reg_flag_1 || curr_args_flags.ram_flag_1) || !curr_args_flags.reg_flag_2)
             {
-                stack_destroy(&refund_stack);
-                stack_destroy(&int_proc_stack);
-                free(command_arr);
+                FREE;
                 return WRONG_ARGS;
             }
 
@@ -314,9 +311,7 @@ int main(int argc, char** argv)
             int refund_address = 0;
             if(stack_pop(&refund_stack, &refund_address) == NULL_SIZE_OF_STACK)
             {
-                stack_destroy(&refund_stack);
-                stack_destroy(&int_proc_stack);
-                free(command_arr);
+                FREE;
                 return NULL_SIZE_OF_STACK;
             }
             command_counter = refund_address;
@@ -326,9 +321,7 @@ int main(int argc, char** argv)
             {
                 if(num_of_args < 1)
                 {
-                    stack_destroy(&refund_stack);
-                    stack_destroy(&int_proc_stack);
-                    free(command_arr);
+                    FREE;
                     return WRONG_ARGS;
                 }
                 
@@ -338,9 +331,7 @@ int main(int argc, char** argv)
                 stack_pop(&int_proc_stack, &pop_1);
                 if(stack_pop(&int_proc_stack, &pop_2) == NULL_SIZE_OF_STACK)
                 {
-                    stack_destroy(&refund_stack);
-                    stack_destroy(&int_proc_stack);
-                    free(command_arr);
+                    FREE;
                     return NULL_SIZE_OF_STACK;
                 }
 
@@ -377,8 +368,7 @@ int main(int argc, char** argv)
 
                     if(arg_1 < 0 || arg_1 >= num_of_commands)
                     {
-                        stack_destroy(&int_proc_stack);
-                        free(command_arr);
+                        FREE;
                         return WRONG_JMP_ADDRESS;
                     }
 
@@ -393,9 +383,7 @@ int main(int argc, char** argv)
             scanf("%d", &val);
             if(curr_args_flags.num_flag_1 && !curr_args_flags.ram_flag_1)
             {
-                stack_destroy(&refund_stack);
-                stack_destroy(&int_proc_stack);
-                free(command_arr);
+                FREE;
                 return WRONG_ARGS;
             }
             if(num_of_args == 0)
@@ -404,23 +392,19 @@ int main(int argc, char** argv)
             }
             else
             {
-                int arg;
-                int_arg_handler_1(&arg, curr_args_flags, reg_arr, &arg_counter, args);
                 if(curr_args_flags.ram_flag_1)
                 {
-                    ram_arr[arg] = val;
+                    DEF_ASSIGMENT_RAM(val);
                 }
                 else
                 {
-                    reg_arr[args[0]] = val;
+                    DEF_ASSIGMENT_REG(val);
                 }
             }
         }
 
         command_counter++;
     }
-    stack_destroy(&refund_stack);
-    stack_destroy(&int_proc_stack);
-    free(command_arr);
+    FREE;
     return NO_ERRORS;
 }
